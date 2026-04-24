@@ -7,22 +7,23 @@
         "php": ">=8.2",
         "ext-ctype": "*",
         "ext-iconv": "*",
-        "api-platform/core": "^4.3",
-        "doctrine/dbal": "^4.4",
-        "doctrine/doctrine-bundle": "^2.18",
+        "api-platform/core": "^4.3.3",
+        "doctrine/dbal": "^4.4.3",
+        "doctrine/doctrine-bundle": "^2.18.2",
         "doctrine/doctrine-migrations-bundle": "^3.7",
-        "doctrine/orm": "^3.6",
-        "knplabs/knp-snappy-bundle": "^1.10",
+        "doctrine/orm": "^3.6.3",
+        "knplabs/knp-snappy-bundle": "^1.10.6",
         "lexik/jwt-authentication-bundle": "^3.2",
         "nelmio/api-doc-bundle": "^5.10",
         "symfony/console": "7.4.*",
         "symfony/dotenv": "7.4.*",
-        "symfony/flex": "^2",
+        "symfony/flex": "^2.10",
         "symfony/framework-bundle": "7.4.*",
         "symfony/runtime": "7.4.*",
         "symfony/security-bundle": "7.4.*",
         "symfony/serializer": "7.4.*",
         "symfony/validator": "7.4.*",
+        "symfony/uid": "7.4.*",
         "symfony/yaml": "7.4.*"
     },
     "config": {
@@ -76,7 +77,7 @@
         }
     },
     "require-dev": {
-        "doctrine/doctrine-fixtures-bundle": "^4.3",
+        "doctrine/doctrine-fixtures-bundle": "^4.3.1",
         "symfony/maker-bundle": "^1.67"
     }
 }
