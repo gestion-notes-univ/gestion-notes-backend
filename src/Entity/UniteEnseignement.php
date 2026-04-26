@@ -24,17 +24,20 @@ class UniteEnseignement
     #[ORM\JoinColumn(name: 'enseignant_id', referencedColumnName: 'id')]
     private Enseignant $enseignant;
 
-    #[ORM\Column(length: 100)]
+    #[ORM\Column(length: 150)]
     private string $nom;
 
-    #[ORM\Column(length: 10)]
+    #[ORM\Column(length: 20)]
     private string $code;
 
-    #[ORM\Column(type: 'float')]
-    private float $coefficient;
+    #[ORM\Column(type: 'decimal', precision: 4, scale: 2)]
+    private string $coefficient;
 
     #[ORM\Column(name: 'credits_ects', type: 'integer')]
     private int $creditsEcts;
+
+    #[ORM\Column(name: 'note_minimum', type: 'decimal', precision: 4, scale: 2)]
+    private string $noteMinimum;
 
     #[ORM\OneToMany(mappedBy: 'uniteEnseignement', targetEntity: Note::class)]
     private Collection $notes;
@@ -53,9 +56,11 @@ class UniteEnseignement
     public function setNom(string $n): static { $this->nom = $n; return $this; }
     public function getCode(): string { return $this->code; }
     public function setCode(string $c): static { $this->code = $c; return $this; }
-    public function getCoefficient(): float { return $this->coefficient; }
-    public function setCoefficient(float $c): static { $this->coefficient = $c; return $this; }
+    public function getCoefficient(): string { return $this->coefficient; }
+    public function setCoefficient(string $c): static { $this->coefficient = $c; return $this; }
     public function getCreditsEcts(): int { return $this->creditsEcts; }
     public function setCreditsEcts(int $c): static { $this->creditsEcts = $c; return $this; }
+    public function getNoteMinimum(): string { return $this->noteMinimum; }
+    public function setNoteMinimum(string $n): static { $this->noteMinimum = $n; return $this; }
     public function getNotes(): Collection { return $this->notes; }
 }

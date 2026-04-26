@@ -16,6 +16,11 @@ final class Version20260424123404 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
+        $this->addSql("DROP TYPE IF EXISTS role_utilisateur CASCADE");
+        $this->addSql("DROP TYPE IF EXISTS resultat_deliberation CASCADE");
+        $this->addSql("DROP TYPE IF EXISTS statut_reclamation CASCADE");
+        $this->addSql("DROP TYPE IF EXISTS type_notification CASCADE");
+
         $this->addSql("CREATE TYPE role_utilisateur AS ENUM ('admin','enseignant','scolarite','etudiant')");
         $this->addSql("CREATE TYPE resultat_deliberation AS ENUM ('admis','ajourne','rattrapage','exclus')");
         $this->addSql("CREATE TYPE statut_reclamation AS ENUM ('en_attente','en_cours','resolue','rejetee')");

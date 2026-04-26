@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: NoteRepository::class)]
-#[ORM\Table(name: 'notes')]
+#[ORM\Table(name: 'notes', uniqueConstraints: [new ORM\UniqueConstraint(name: 'unique_etudiant_ue', columns: ['etudiant_id', 'ue_id'])] )]
 class Note
 {
     #[ORM\Id]
@@ -21,17 +21,35 @@ class Note
     private Etudiant $etudiant;
 
     #[ORM\ManyToOne(targetEntity: UniteEnseignement::class, inversedBy: 'notes')]
-    #[ORM\JoinColumn(name: 'unite_enseignement_id', referencedColumnName: 'id')]
-    private UniteEnseignement $uniteEnseignement;
+    #[ORM\JoinColumn(name: 'ue_id', referencedColumnName: 'id')]
+    private UniteEnseignement $ue;
 
-    #[ORM\Column(type: 'float', nullable: true)]
-    private ?float $valeur = null;
+    #[ORM\Column(type: 'decimal', precision: 4, scale: 2, nullable: true)]
+    #[ORM\CheckConstraint(name: 'check_note_cc_range', expression: '(note_cc BETWEEN 0 AND 20)')]
+    private ?float $noteCc = null;
 
-    #[ORM\Column(length: 20, nullable: true)]
-    private ?string $session = null;
+    #[ORM\Column(type: 'decimal', precision: 4, scale: 2, nullable: true)]
+    #[ORM\CheckConstraint(name: 'check_note_examen_range', expression: '(note_examen BETWEEN 0 AND 20)')]
+    private ?float $noteExamen = null;
+
+    #[ORM\Column(type: 'decimal', precision: 4, scale: 2, nullable: true, options: ['default' => 0])]
+    private ?float $noteFinale = null;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $validee = false;
+
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: 'validee_par', referencedColumnName: 'id')]
+    private ?Utilisateur $valideePar = null;
 
     #[ORM\Column(name: 'date_saisie', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $dateSaisie = null;
+
+    #[ORM\Column(name: 'date_validation', type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $dateValidation = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $commentaire = null;
 
     #[ORM\OneToMany(mappedBy: 'note', targetEntity: Reclamation::class)]
     private Collection $reclamations;
@@ -44,13 +62,23 @@ class Note
     public function getId(): ?string { return $this->id; }
     public function getEtudiant(): Etudiant { return $this->etudiant; }
     public function setEtudiant(Etudiant $e): static { $this->etudiant = $e; return $this; }
-    public function getUniteEnseignement(): UniteEnseignement { return $this->uniteEnseignement; }
-    public function setUniteEnseignement(UniteEnseignement $u): static { $this->uniteEnseignement = $u; return $this; }
-    public function getValeur(): ?float { return $this->valeur; }
-    public function setValeur(?float $v): static { $this->valeur = $v; return $this; }
-    public function getSession(): ?string { return $this->session; }
-    public function setSession(?string $s): static { $this->session = $s; return $this; }
+    public function getUe(): UniteEnseignement { return $this->ue; }
+    public function setUe(UniteEnseignement $u): static { $this->ue = $u; return $this; }
+    public function getNoteCc(): ?float { return $this->noteCc; }
+    public function setNoteCc(?float $v): static { $this->noteCc = $v; return $this; }
+    public function getNoteExamen(): ?float { return $this->noteExamen; }
+    public function setNoteExamen(?float $v): static { $this->noteExamen = $v; return $this; }
+    public function getNoteFinale(): ?float { return $this->noteFinale; }
+    public function setNoteFinale(?float $v): static { $this->noteFinale = $v; return $this; }
+    public function isValidee(): bool { return $this->validee; }
+    public function setValidee(bool $v): static { $this->validee = $v; return $this; }
+    public function getValideePar(): ?Utilisateur { return $this->valideePar; }
+    public function setValideePar(?Utilisateur $u): static { $this->valideePar = $u; return $this; }
     public function getDateSaisie(): ?\DateTimeInterface { return $this->dateSaisie; }
     public function setDateSaisie(?\DateTimeInterface $d): static { $this->dateSaisie = $d; return $this; }
+    public function getDateValidation(): ?\DateTimeInterface { return $this->dateValidation; }
+    public function setDateValidation(?\DateTimeInterface $d): static { $this->dateValidation = $d; return $this; }
+    public function getCommentaire(): ?string { return $this->commentaire; }
+    public function setCommentaire(?string $c): static { $this->commentaire = $c; return $this; }
     public function getReclamations(): Collection { return $this->reclamations; }
 }

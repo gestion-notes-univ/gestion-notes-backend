@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Procès-verbal de délibération</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: DejaVu Sans, Arial, sans-serif;
+            font-size: 11px;
+            color: #2c2c2a;
+            background: #fff;
+        }
+
+        /* ---- EN-TÊTE ---- */
+        .header {
+            display: table;
+            width: 100%;
+            border-bottom: 2px solid #085041;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+        .header-left  { display: table-cell; vertical-align: middle; width: 65%; }
+        .header-right { display: table-cell; vertical-align: middle; text-align: right; }
+
+        .univ-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #085041;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .univ-sub { font-size: 10px; color: #5F5E5A; margin-top: 2px; }
+
+        .doc-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #085041;
+            text-transform: uppercase;
+        }
+        .doc-sub { font-size: 10px; color: #888780; margin-top: 2px; }
+
+        /* ---- INFOS SEMESTRE ---- */
+        .info-box {
+            background: #E1F5EE;
+            border-left: 4px solid #085041;
+            border-radius: 4px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            display: table;
+            width: 100%;
+        }
+        .info-col { display: table-cell; width: 33%; vertical-align: top; }
+        .info-label { font-size: 10px; color: #0F6E56; text-transform: uppercase; letter-spacing: 0.3px; }
+        .info-value { font-size: 12px; font-weight: bold; color: #04342C; margin-top: 2px; }
+
+        /* ---- STATS ---- */
+        .stats-row {
+            display: table;
+            width: 100%;
+            margin-bottom: 14px;
+            border-spacing: 6px;
+        }
+        .stat-card {
+            display: table-cell;
+            text-align: center;
+            padding: 8px 10px;
+            border-radius: 4px;
+            width: 20%;
+        }
+        .stat-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 3px; }
+        .stat-value { font-size: 18px; font-weight: bold; }
+
+        .stat-total     { background: #E1F5EE; }
+        .stat-total     .stat-label { color: #0F6E56; }
+        .stat-total     .stat-value { color: #04342C; }
+
+        .stat-admis     { background: #EAF3DE; }
+        .stat-admis     .stat-label { color: #3B6D11; }
+        .stat-admis     .stat-value { color: #173404; }
+
+        .stat-rattrapage{ background: #FAEEDA; }
+        .stat-rattrapage .stat-label { color: #854F0B; }
+        .stat-rattrapage .stat-value { color: #412402; }
+
+        .stat-ajourne   { background: #FAECE7; }
+        .stat-ajourne   .stat-label { color: #993C1D; }
+        .stat-ajourne   .stat-value { color: #4A1B0C; }
+
+        .stat-taux      { background: #EEEDFE; }
+        .stat-taux      .stat-label { color: #534AB7; }
+        .stat-taux      .stat-value { color: #26215C; }
+
+        /* ---- TABLEAU PV ---- */
+        .section-title {
+            font-size: 10px;
+            font-weight: bold;
+            color: #085041;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #9FE1CB;
+            padding-bottom: 3px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 14px;
+        }
+        thead tr { background: #085041; color: #fff; }
+        thead th {
+            padding: 7px 8px;
+            text-align: left;
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        thead th.center { text-align: center; }
+
+        tbody tr:nth-child(even) { background: #F1EFE8; }
+        tbody tr:nth-child(odd)  { background: #fff; }
+        tbody tr.admis-row       { }
+        tbody tr.ajourne-row     { }
+
+        tbody td {
+            padding: 6px 8px;
+            font-size: 10px;
+            border-bottom: 0.5px solid #D3D1C7;
+            color: #2c2c2a;
+        }
+        tbody td.center { text-align: center; }
+
+        .num { font-size: 9px; color: #888780; }
+
+        /* Badges décision */
+        .badge {
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .badge-admis      { background: #EAF3DE; color: #27500A; }
+        .badge-rattrapage { background: #FAEEDA; color: #633806; }
+        .badge-ajourne    { background: #FAECE7; color: #712B13; }
+        .badge-exclus     { background: #FCEBEB; color: #791F1F; }
+
+        .moy-admis    { color: #27500A; font-weight: bold; }
+        .moy-rattrpage { color: #633806; font-weight: bold; }
+        .moy-ajourne  { color: #712B13; font-weight: bold; }
+
+        /* ---- SIGNATURES ---- */
+        .signature-zone {
+            margin-top: 24px;
+            display: table;
+            width: 100%;
+        }
+        .signature-col {
+            display: table-cell;
+            width: 33%;
+            text-align: center;
+        }
+        .signature-line {
+            border-top: 1px solid #888780;
+            margin: 36px 16px 5px;
+        }
+        .signature-label { font-size: 10px; color: #5F5E5A; }
+
+        /* ---- PIED DE PAGE ---- */
+        .footer {
+            border-top: 1px solid #D3D1C7;
+            padding-top: 8px;
+            margin-top: 16px;
+            display: table;
+            width: 100%;
+        }
+        .footer-left  { display: table-cell; font-size: 9px; color: #888780; }
+        .footer-right { display: table-cell; text-align: right; font-size: 9px; color: #888780; }
+    </style>
+</head>
+<body>
+
+    <!-- EN-TÊTE -->
+    <div class="header">
+        <div class="header-left">
+            <div class="univ-name">Université — Établissement</div>
+            <div class="univ-sub">Service de la Scolarité — Jury de délibération</div>
+        </div>
+        <div class="header-right">
+            <div class="doc-title">Procès-verbal</div>
+            <div class="doc-sub">de délibération — Document officiel</div>
+        </div>
+    </div>
+
+    <!-- INFOS SEMESTRE -->
+    <div class="info-box">
+        <div class="info-col">
+            <div class="info-label">Semestre</div>
+            <div class="info-value">{{ semestre.nom }}</div>
+        </div>
+        <div class="info-col">
+            <div class="info-label">Année académique</div>
+            <div class="info-value">{{ semestre.anneeAcademique }}</div>
+        </div>
+        <div class="info-col">
+            <div class="info-label">Date de délibération</div>
+            <div class="info-value">{{ date_export|date('d/m/Y') }}</div>
+        </div>
+    </div>
+
+    <!-- STATISTIQUES -->
+    <div class="stats-row">
+        <div class="stat-card stat-total">
+            <div class="stat-label">Total étudiants</div>
+            <div class="stat-value">{{ deliberations|length }}</div>
+        </div>
+        <div class="stat-card stat-admis">
+            <div class="stat-label">Admis</div>
+            <div class="stat-value">{{ nb_admis }}</div>
+        </div>
+        <div class="stat-card stat-rattrapage">
+            <div class="stat-label">Rattrapage</div>
+            <div class="stat-value">{{ nb_rattrapage }}</div>
+        </div>
+        <div class="stat-card stat-ajourne">
+            <div class="stat-label">Ajourné(e)s</div>
+            <div class="stat-value">{{ nb_ajourne }}</div>
+        </div>
+        <div class="stat-card stat-taux">
+            <div class="stat-label">Taux réussite</div>
+            <div class="stat-value">
+                {% if deliberations|length > 0 %}
+                    {{ ((nb_admis / deliberations|length) * 100)|round }}%
+                {% else %}
+                    —
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLEAU DES DÉLIBÉRATIONS -->
+    <div class="section-title">Liste des résultats individuels</div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 30px;">#</th>
+                <th>N° Étudiant</th>
+                <th>Nom et prénom</th>
+                <th>Filière</th>
+                <th class="center">Moy. générale</th>
+                <th class="center">Crédits validés</th>
+                <th class="center">Décision</th>
+                <th class="center">Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for deliberation in deliberations %}
+            <tr>
+                <td class="num">{{ loop.index }}</td>
+                <td><strong>{{ deliberation.etudiant.numeroEtudiant }}</strong></td>
+                <td>{{ deliberation.etudiant.utilisateur.nomComplet }}</td>
+                <td>{{ deliberation.etudiant.filiere.nom }}</td>
+                <td class="center
+                    {% if deliberation.decision == 'admis' %}moy-admis
+                    {% elseif deliberation.decision == 'rattrapage' %}moy-rattrpage
+                    {% else %}moy-ajourne{% endif %}">
+                    {{ deliberation.moyenneGenerale|number_format(2, ',', ' ') }}
+                </td>
+                <td class="center">{{ deliberation.creditsValides }}</td>
+                <td class="center">
+                    <span class="badge badge-{{ deliberation.decision }}">
+                        {% if deliberation.decision == 'admis' %}Admis(e)
+                        {% elseif deliberation.decision == 'rattrapage' %}Rattrapage
+                        {% elseif deliberation.decision == 'ajourne' %}Ajourné(e)
+                        {% else %}Exclus(e){% endif %}
+                    </span>
+                </td>
+                <td class="center">{{ deliberation.dateDeliberation|date('d/m/Y') }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="center" style="color: #888780; font-style: italic; padding: 16px;">
+                    Aucune délibération enregistrée pour ce semestre.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- SIGNATURES -->
+    <div class="signature-zone">
+        <div class="signature-col">
+            <div class="signature-line"></div>
+            <div class="signature-label">Le/La Président(e) du jury</div>
+        </div>
+        <div class="signature-col">
+            <div class="signature-line"></div>
+            <div class="signature-label">Le/La Responsable de la scolarité</div>
+        </div>
+        <div class="signature-col">
+            <div class="signature-line"></div>
+            <div class="signature-label">Le/La Directeur(trice)</div>
+        </div>
+    </div>
+
+    <!-- PIED DE PAGE -->
+    <div class="footer">
+        <div class="footer-left">
+            PV généré le {{ date_export|date('d/m/Y à H:i') }}
+            — Document confidentiel réservé au jury et à l'administration.
+        </div>
+        <div class="footer-right">
+            {{ semestre.nom }} — {{ semestre.anneeAcademique }}
+        </div>
+    </div>
+
+</body>
+</html>

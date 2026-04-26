@@ -25,11 +25,12 @@ class Reclamation
     #[ORM\Column(type: 'text')]
     private string $motif;
 
-    #[ORM\Column(length: 20, options: ['default' => 'en_attente'])]
+    #[ORM\Column(type: 'string', columnDefinition: "statut_reclamation NOT NULL DEFAULT 'en_attente'")]
     private string $statut = 'en_attente';
 
-    #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $reponse = null;
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: 'traitee_par', referencedColumnName: 'id')]
+    private ?Utilisateur $traiteePar = null;
 
     #[ORM\Column(name: 'created_at', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private \DateTimeInterface $createdAt;
@@ -48,7 +49,7 @@ class Reclamation
     public function setMotif(string $m): static { $this->motif = $m; return $this; }
     public function getStatut(): string { return $this->statut; }
     public function setStatut(string $s): static { $this->statut = $s; return $this; }
-    public function getReponse(): ?string { return $this->reponse; }
-    public function setReponse(?string $r): static { $this->reponse = $r; return $this; }
+    public function getTraiteePar(): ?Utilisateur { return $this->traiteePar; }
+    public function setTraiteePar(?Utilisateur $u): static { $this->traiteePar = $u; return $this; }
     public function getCreatedAt(): \DateTimeInterface { return $this->createdAt; }
 }
