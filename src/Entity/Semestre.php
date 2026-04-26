@@ -28,6 +28,7 @@ class Semestre
     private string $anneeAcademique;
 
     #[ORM\Column(type: 'integer')]
+    #[ORM\CheckConstraint(name: 'check_semestre_numero_range', expression: '(numero BETWEEN 1 AND 8)')]
     private int $numero;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]

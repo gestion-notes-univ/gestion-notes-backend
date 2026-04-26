@@ -7,28 +7,23 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class FiliereService
 {
-    public function __construct(
-        private EntityManagerInterface $em
-    ) {}
+    public function __construct(private EntityManagerInterface $em) {}
 
     public function getAll(): array
     {
         return $this->em->getRepository(Filiere::class)->findAll();
     }
 
-    public function getOne(string $id): ?Filiere
+    public function getById(string $id): ?Filiere
     {
         return $this->em->getRepository(Filiere::class)->find($id);
     }
 
     public function create(array $data): Filiere
     {
-        if (empty($data['nom']) || empty($data['code'])) {
-            throw new \Exception('Champs obligatoires : nom, code');
-        }
-
-        if ($this->em->getRepository(Filiere::class)->findOneBy(['code' => $data['code']])) {
-            throw new \Exception('Code filière déjà utilisé');
+        if ($this->em->getRepository(Filiere::class)
+            ->findOneBy(['code' => strtoupper($data['code'])])) {
+            throw new \Exception('Code existe déjà');
         }
 
         $filiere = new Filiere();
@@ -42,32 +37,28 @@ class FiliereService
         return $filiere;
     }
 
-    public function update(Filiere $filiere, array $data): Filiere
+    public function update(string $id, array $data): ?Filiere
     {
+        $filiere = $this->getById($id);
+        if (!$filiere) return null;
+
         if (!empty($data['nom']))        $filiere->setNom($data['nom']);
         if (!empty($data['code']))       $filiere->setCode(strtoupper($data['code']));
-        if (array_key_exists('departement', $data)) {
-            $filiere->setDepartement($data['departement']);
-        }
+        if (isset($data['departement'])) $filiere->setDepartement($data['departement']);
 
         $this->em->flush();
 
         return $filiere;
     }
 
-    public function delete(Filiere $filiere): void
+    public function delete(string $id): bool
     {
+        $filiere = $this->getById($id);
+        if (!$filiere) return false;
+
         $this->em->remove($filiere);
         $this->em->flush();
-    }
 
-    public function serialize(Filiere $f): array
-    {
-        return [
-            'id'          => $f->getId(),
-            'nom'         => $f->getNom(),
-            'code'        => $f->getCode(),
-            'departement' => $f->getDepartement(),
-        ];
+        return true;
     }
 }

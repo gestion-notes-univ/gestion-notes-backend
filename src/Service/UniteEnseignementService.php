@@ -11,48 +11,29 @@ class UniteEnseignementService
 {
     public function __construct(private EntityManagerInterface $em) {}
 
-    public function getAll(?string $semestreId, ?string $enseignantId): array
+    public function getAll(array $criteria = [])
     {
-        $criteria = [];
-
-        if ($semestreId) {
-            $semestre = $this->em->getRepository(Semestre::class)->find($semestreId);
-            if (!$semestre) throw new \Exception('Semestre introuvable');
-            $criteria['semestre'] = $semestre;
-        }
-
-        if ($enseignantId) {
-            $enseignant = $this->em->getRepository(Enseignant::class)->find($enseignantId);
-            if (!$enseignant) throw new \Exception('Enseignant introuvable');
-            $criteria['enseignant'] = $enseignant;
-        }
-
         return $this->em->getRepository(UniteEnseignement::class)->findBy($criteria);
     }
 
-    public function getById(string $id): UniteEnseignement
+    public function getById(string $id): ?UniteEnseignement
     {
-        $ue = $this->em->getRepository(UniteEnseignement::class)->find($id);
-        if (!$ue) throw new \Exception('UE introuvable');
-        return $ue;
+        return $this->em->getRepository(UniteEnseignement::class)->find($id);
     }
 
     public function create(array $data): UniteEnseignement
     {
-        $required = ['nom', 'code', 'coefficient', 'credits_ects', 'semestre_id'];
-        foreach ($required as $field) {
-            if (!isset($data[$field])) {
-                throw new \Exception("Champ obligatoire manquant : $field");
-            }
+        if ($this->em->getRepository(UniteEnseignement::class)->findOneBy(['code' => strtoupper($data['code'])])) {
+            throw new \Exception('duplicate_code');
         }
 
         $semestre = $this->em->getRepository(Semestre::class)->find($data['semestre_id']);
-        if (!$semestre) throw new \Exception('Semestre introuvable');
+        if (!$semestre) throw new \Exception('semestre_not_found');
 
         $enseignant = null;
         if (!empty($data['enseignant_id'])) {
             $enseignant = $this->em->getRepository(Enseignant::class)->find($data['enseignant_id']);
-            if (!$enseignant) throw new \Exception('Enseignant introuvable');
+            if (!$enseignant) throw new \Exception('enseignant_not_found');
         }
 
         $ue = new UniteEnseignement();
@@ -60,6 +41,7 @@ class UniteEnseignementService
            ->setCode(strtoupper($data['code']))
            ->setCoefficient((float) $data['coefficient'])
            ->setCreditsEcts((int) $data['credits_ects'])
+           ->setNoteMinimum(isset($data['note_minimum']) ? (float) $data['note_minimum'] : 10.0)
            ->setSemestre($semestre)
            ->setEnseignant($enseignant);
 
@@ -69,28 +51,31 @@ class UniteEnseignementService
         return $ue;
     }
 
-    public function update(string $id, array $data): UniteEnseignement
+    public function update(UniteEnseignement $ue, array $data): UniteEnseignement
     {
-        $ue = $this->getById($id);
-
         if (!empty($data['nom']))         $ue->setNom($data['nom']);
         if (!empty($data['code']))        $ue->setCode(strtoupper($data['code']));
         if (isset($data['coefficient']))  $ue->setCoefficient((float) $data['coefficient']);
         if (isset($data['credits_ects'])) $ue->setCreditsEcts((int) $data['credits_ects']);
+        if (isset($data['note_minimum'])) $ue->setNoteMinimum((float) $data['note_minimum']);
 
-        if (!empty($data['enseignant_id'])) {
-            $enseignant = $this->em->getRepository(Enseignant::class)->find($data['enseignant_id']);
-            if (!$enseignant) throw new \Exception('Enseignant introuvable');
-            $ue->setEnseignant($enseignant);
+        if (array_key_exists('enseignant_id', $data)) {
+            if ($data['enseignant_id'] === null) {
+                $ue->setEnseignant(null);
+            } else {
+                $enseignant = $this->em->getRepository(Enseignant::class)->find($data['enseignant_id']);
+                if (!$enseignant) throw new \Exception('enseignant_not_found');
+                $ue->setEnseignant($enseignant);
+            }
         }
 
         $this->em->flush();
+
         return $ue;
     }
 
-    public function delete(string $id): void
+    public function delete(UniteEnseignement $ue): void
     {
-        $ue = $this->getById($id);
         $this->em->remove($ue);
         $this->em->flush();
     }

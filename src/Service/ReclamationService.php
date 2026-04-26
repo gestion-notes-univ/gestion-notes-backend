@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Reclamation;
 use App\Entity\Etudiant;
 use App\Entity\Note;
+use App\Entity\Utilisateur;
 use Doctrine\ORM\EntityManagerInterface;
 
 class ReclamationService
@@ -16,78 +17,79 @@ class ReclamationService
         return $this->em->getRepository(Reclamation::class)->findAll();
     }
 
-    public function getByEtudiant(Etudiant $etudiant): array
+    public function getByEtudiant(Utilisateur $user): array
     {
+        $etudiant = $this->em->getRepository(Etudiant::class)
+            ->findOneBy(['utilisateur' => $user]);
+
+        if (!$etudiant) {
+            throw new \Exception('Profil étudiant introuvable');
+        }
+
         return $this->em->getRepository(Reclamation::class)
-                        ->findBy(['etudiant' => $etudiant]);
+            ->findBy(['etudiant' => $etudiant]);
     }
 
-    public function create(Etudiant $etudiant, array $data): Reclamation
+    public function create(array $data, Utilisateur $user): Reclamation
     {
         if (empty($data['note_id']) || empty($data['motif'])) {
-            throw new \Exception('Champs obligatoires');
+            throw new \Exception('Champs obligatoires : note_id, motif');
         }
 
-        $note = $this->em->getRepository(Note::class)->find($data['note_id']);
+        $etudiant = $this->em->getRepository(Etudiant::class)
+            ->findOneBy(['utilisateur' => $user]);
+
+        $note = $this->em->getRepository(Note::class)
+            ->find($data['note_id']);
+
+        if (!$etudiant) throw new \Exception('Profil étudiant introuvable');
         if (!$note) throw new \Exception('Note introuvable');
 
-        // Vérifier appartenance
         if ($note->getEtudiant()->getId() != $etudiant->getId()) {
-            throw new \Exception('Accès refusé');
+            throw new \Exception('Cette note ne vous appartient pas');
         }
 
-        // Vérifier existante
-        $exist = $this->em->getRepository(Reclamation::class)->findOneBy([
+        $existante = $this->em->getRepository(Reclamation::class)->findOneBy([
             'etudiant' => $etudiant,
-            'note' => $note,
-            'statut' => 'en_attente'
+            'note'     => $note,
+            'statut'   => 'en_attente',
         ]);
 
-        if ($exist) {
-            throw new \Exception('Réclamation déjà existante');
+        if ($existante) {
+            throw new \Exception('Réclamation déjà en attente');
         }
 
-        $r = new Reclamation();
-        $r->setEtudiant($etudiant)
-          ->setNote($note)
-          ->setMotif($data['motif'])
-          ->setStatut('en_attente')
-          ->setCreatedAt(new \DateTimeImmutable());
+        $reclamation = new Reclamation();
+        $reclamation->setEtudiant($etudiant)
+            ->setNote($note)
+            ->setMotif($data['motif'])
+            ->setStatut('en_attente')
+            ->setCreatedAt(new \DateTimeImmutable());
 
-        $this->em->persist($r);
+        $this->em->persist($reclamation);
         $this->em->flush();
 
-        return $r;
+        return $reclamation;
     }
 
-    public function traiter(Reclamation $r, array $data): Reclamation
+    public function traiter(string $id, array $data, Utilisateur $user): Reclamation
     {
-        $valid = ['en_cours', 'resolue', 'rejetee'];
+        $reclamation = $this->em->getRepository(Reclamation::class)->find($id);
 
-        if (!in_array($data['statut'] ?? '', $valid)) {
+        if (!$reclamation) {
+            throw new \Exception('Réclamation introuvable');
+        }
+
+        $statutsValides = ['en_cours', 'resolue', 'rejetee'];
+        if (!in_array($data['statut'] ?? '', $statutsValides)) {
             throw new \Exception('Statut invalide');
         }
 
-        $r->setStatut($data['statut'])
-          ->setReponse($data['reponse'] ?? null);
+        $reclamation->setStatut($data['statut'])
+            ->setTraiteePar($user);
 
         $this->em->flush();
 
-        return $r;
-    }
-
-    public function serialize(Reclamation $r): array
-    {
-        return [
-            'id' => $r->getId(),
-            'etudiant' => $r->getEtudiant()->getUtilisateur()->getNomComplet(),
-            'note' => [
-                'id' => $r->getNote()->getId(),
-                'valeur' => $r->getNote()->getValeur(),
-            ],
-            'motif' => $r->getMotif(),
-            'statut' => $r->getStatut(),
-            'reponse' => $r->getReponse()
-        ];
+        return $reclamation;
     }
 }

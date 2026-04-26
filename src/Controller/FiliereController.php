@@ -12,26 +12,23 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/api/filieres')]
 class FiliereController extends AbstractController
 {
-    public function __construct(
-        private FiliereService $service
-    ) {}
+    public function __construct(private FiliereService $service) {}
 
     #[Route('', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function index(): JsonResponse
     {
-        $data = $this->service->getAll();
-        return $this->json(array_map([$this->service, 'serialize'], $data));
+        return $this->json(array_map([$this, 'serialize'], $this->service->getAll()));
     }
 
     #[Route('/{id}', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function show(string $id): JsonResponse
     {
-        $f = $this->service->getOne($id);
+        $f = $this->service->getById($id);
         if (!$f) return $this->json(['error' => 'Introuvable'], 404);
 
-        return $this->json($this->service->serialize($f));
+        return $this->json($this->serialize($f));
     }
 
     #[Route('', methods: ['POST'])]
@@ -44,7 +41,7 @@ class FiliereController extends AbstractController
 
             return $this->json([
                 'message' => 'Créé',
-                'data' => $this->service->serialize($f)
+                'filiere' => $this->serialize($f)
             ], 201);
 
         } catch (\Exception $e) {
@@ -56,32 +53,35 @@ class FiliereController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function update(string $id, Request $request): JsonResponse
     {
-        $f = $this->service->getOne($id);
+        $data = json_decode($request->getContent(), true);
+        $f = $this->service->update($id, $data);
+
         if (!$f) return $this->json(['error' => 'Introuvable'], 404);
 
-        try {
-            $data = json_decode($request->getContent(), true);
-            $f = $this->service->update($f, $data);
-
-            return $this->json([
-                'message' => 'Mis à jour',
-                'data' => $this->service->serialize($f)
-            ]);
-
-        } catch (\Exception $e) {
-            return $this->json(['error' => $e->getMessage()], 400);
-        }
+        return $this->json([
+            'message' => 'Mis à jour',
+            'filiere' => $this->serialize($f)
+        ]);
     }
 
     #[Route('/{id}', methods: ['DELETE'])]
     #[IsGranted('ROLE_ADMIN')]
     public function delete(string $id): JsonResponse
     {
-        $f = $this->service->getOne($id);
-        if (!$f) return $this->json(['error' => 'Introuvable'], 404);
-
-        $this->service->delete($f);
+        if (!$this->service->delete($id)) {
+            return $this->json(['error' => 'Introuvable'], 404);
+        }
 
         return $this->json(['message' => 'Supprimé']);
+    }
+
+    private function serialize($f): array
+    {
+        return [
+            'id'          => $f->getId(),
+            'nom'         => $f->getNom(),
+            'code'        => $f->getCode(),
+            'departement' => $f->getDepartement(),
+        ];
     }
 }

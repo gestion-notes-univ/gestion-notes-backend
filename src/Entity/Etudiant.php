@@ -22,7 +22,7 @@ class Etudiant
     private Utilisateur $utilisateur;
 
     #[ORM\ManyToOne(targetEntity: Filiere::class, inversedBy: 'etudiants')]
-    #[ORM\JoinColumn(name: 'filiere_id', referencedColumnName: 'id')]
+    #[ORM\JoinColumn(name: 'filiere_id', referencedColumnName: 'id', nullable: false)]
     private Filiere $filiere;
 
     #[ORM\Column(name: 'numero_etudiant', length: 20, unique: true)]

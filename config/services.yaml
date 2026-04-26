@@ -1,23 +1,63 @@
-# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
-
-# This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
-# See also https://symfony.com/doc/current/service_container/import.html
-
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    # Chemin vers wkhtmltopdf selon ton OS
+    # Linux (Ubuntu/Debian) :
+    wkhtmltopdf_path: "/usr/local/bin/wkhtmltopdf"
+    # macOS (Homebrew) : '/usr/local/bin/wkhtmltopdf'
+    # Windows           : 'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
 
 services:
-    # default configuration for services in *this* file
+    # -------------------------------------------------------
+    # Configuration par défaut
+    # -------------------------------------------------------
     _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        autowire: true
+        autoconfigure: true
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
+    # -------------------------------------------------------
+    # Chargement automatique de App\
+    # -------------------------------------------------------
     App\:
-        resource: '../src/'
+        resource: "../src/"
+        exclude:
+            - "../src/DependencyInjection/"
+            - "../src/Entity/"
+            - "../src/Kernel.php"
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    # -------------------------------------------------------
+    # KnpSnappy — Génération PDF
+    # -------------------------------------------------------
+    Knp\Snappy\Pdf:
+        class: Knp\Snappy\Pdf
+        arguments:
+            - "%wkhtmltopdf_path%"
+        calls:
+            - [setOption, ["encoding", "utf-8"]]
+            - [setOption, ["no-outline", true]]
+            - [setOption, ["disable-smart-shrinking", true]]
+
+    # Alias pour l'injection dans ExportController
+    knp_snappy.pdf:
+        alias: Knp\Snappy\Pdf
+        public: true
+
+    # -------------------------------------------------------
+    # Services métier (séparés des controllers)
+    # -------------------------------------------------------
+
+    # Service de calcul des notes et moyennes
+    App\Service\NoteService:
+        arguments:
+            - "@doctrine.orm.entity_manager"
+
+    # Service de délibération
+    App\Service\DeliberationService:
+        arguments:
+            - "@doctrine.orm.entity_manager"
+
+    # Service de notifications
+    App\Service\NotificationService:
+        arguments:
+            - "@doctrine.orm.entity_manager"
+
+    # Service d'export PDF
+    App\Service\ExportService: ~

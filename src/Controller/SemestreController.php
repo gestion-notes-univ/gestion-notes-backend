@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Filiere;
 use App\Service\SemestreService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -12,37 +13,35 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/api/semestres')]
 class SemestreController extends AbstractController
 {
-    public function __construct(
-        private SemestreService $service
-    ) {}
+    public function __construct(private SemestreService $service) {}
 
     #[Route('', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function index(Request $request): JsonResponse
     {
-        try {
-            $filiereId = $request->query->get('filiere_id');
-            $actif = $request->query->has('actif')
-                ? filter_var($request->query->get('actif'), FILTER_VALIDATE_BOOLEAN)
-                : null;
+        $filters = [];
 
-            $data = $this->service->getAll($filiereId, $actif);
-
-            return $this->json(array_map([$this->service, 'serialize'], $data));
-
-        } catch (\Exception $e) {
-            return $this->json(['error' => $e->getMessage()], 400);
+        if ($filiereId = $request->query->get('filiere_id')) {
+            $filiere = $this->getDoctrine()->getRepository(Filiere::class)->find($filiereId);
+            if (!$filiere) return $this->json(['error' => 'Filiere introuvable'], 404);
+            $filters['filiere'] = $filiere;
         }
+
+        if ($request->query->has('actif')) {
+            $filters['actif'] = filter_var($request->query->get('actif'), FILTER_VALIDATE_BOOLEAN);
+        }
+
+        return $this->json(array_map([$this, 'serialize'], $this->service->getAll($filters)));
     }
 
     #[Route('/{id}', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function show(string $id): JsonResponse
     {
-        $s = $this->service->getOne($id);
+        $s = $this->service->getById($id);
         if (!$s) return $this->json(['error' => 'Introuvable'], 404);
 
-        return $this->json($this->service->serialize($s));
+        return $this->json($this->serialize($s));
     }
 
     #[Route('', methods: ['POST'])]
@@ -55,7 +54,7 @@ class SemestreController extends AbstractController
 
             return $this->json([
                 'message' => 'Créé',
-                'data' => $this->service->serialize($s)
+                'semestre' => $this->serialize($s)
             ], 201);
 
         } catch (\Exception $e) {
@@ -67,32 +66,42 @@ class SemestreController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function update(string $id, Request $request): JsonResponse
     {
-        $s = $this->service->getOne($id);
+        $data = json_decode($request->getContent(), true);
+        $s = $this->service->update($id, $data);
+
         if (!$s) return $this->json(['error' => 'Introuvable'], 404);
 
-        try {
-            $data = json_decode($request->getContent(), true);
-            $s = $this->service->update($s, $data);
-
-            return $this->json([
-                'message' => 'Mis à jour',
-                'data' => $this->service->serialize($s)
-            ]);
-
-        } catch (\Exception $e) {
-            return $this->json(['error' => $e->getMessage()], 400);
-        }
+        return $this->json([
+            'message' => 'Mis à jour',
+            'semestre' => $this->serialize($s)
+        ]);
     }
 
     #[Route('/{id}', methods: ['DELETE'])]
     #[IsGranted('ROLE_ADMIN')]
     public function delete(string $id): JsonResponse
     {
-        $s = $this->service->getOne($id);
-        if (!$s) return $this->json(['error' => 'Introuvable'], 404);
-
-        $this->service->delete($s);
+        if (!$this->service->delete($id)) {
+            return $this->json(['error' => 'Introuvable'], 404);
+        }
 
         return $this->json(['message' => 'Supprimé']);
+    }
+
+    private function serialize($s): array
+    {
+        return [
+            'id'               => $s->getId(),
+            'nom'              => $s->getNom(),
+            'numero'           => $s->getNumero(),
+            'annee_academique' => $s->getAnneeAcademique(),
+            'actif'            => $s->isActif(),
+            'filiere'          => [
+                'id'          => $s->getFiliere()?->getId(),
+                'nom'         => $s->getFiliere()?->getNom(),
+                'code'        => $s->getFiliere()?->getCode(),
+                'departement' => $s->getFiliere()?->getDepartement(),
+            ],
+        ];
     }
 }

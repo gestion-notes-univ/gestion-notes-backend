@@ -7,12 +7,14 @@ use App\Entity\Semestre;
 use App\Entity\Deliberation;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Snappy\Pdf;
+use Twig\Environment;
 
 class ExportService
 {
     public function __construct(
         private EntityManagerInterface $em,
-        private Pdf $pdf
+        private Pdf $pdf,
+        private Environment $twig
     ) {}
 
     public function generateRelevePdf(Etudiant $etudiant, Semestre $semestre, string $html): string
