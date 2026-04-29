@@ -17,6 +17,7 @@ security:
         login:
             pattern: ^/api/auth/login
             stateless: true
+            provider: app_user_provider
             json_login:
                 check_path: /api/auth/login
                 username_path: email
@@ -39,75 +40,88 @@ security:
         # --- Routes publiques ---
         - { path: ^/api/auth/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/me, roles: IS_AUTHENTICATED_FULLY }
 
-        # --- Admin uniquement ---
-        - { path: ^/api/utilisateurs, roles: ROLE_ADMIN }
-        - {
-              path: ^/api/filieres,
-              roles: ROLE_ADMIN,
-              methods: [POST, PUT, DELETE],
-          }
-        - {
-              path: ^/api/semestres,
-              roles: ROLE_ADMIN,
-              methods: [POST, PUT, DELETE],
-          }
-        - { path: ^/api/ues, roles: ROLE_ADMIN, methods: [POST, PUT, DELETE] }
-        - {
-              path: ^/api/enseignants,
-              roles: ROLE_ADMIN,
-              methods: [POST, PUT, DELETE],
-          }
-        - { path: ^/api/etudiants, roles: ROLE_ADMIN, methods: [DELETE] }
-
-        # --- Scolarité + Admin ---
-        - { path: ^/api/etudiants, roles: ROLE_SCOLARITE, methods: [POST, PUT] }
-        - { path: ^/api/deliberations, roles: ROLE_SCOLARITE }
-        - { path: ^/api/reclamations, roles: ROLE_SCOLARITE, methods: [GET] }
+        # --- Réclamations — spécifiques AVANT générales ---
+        - { path: ^/api/reclamations/mes, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/api/reclamations/.+/traiter, roles: ROLE_SCOLARITE }
-        - { path: ^/api/export/pv, roles: ROLE_SCOLARITE }
-        - { path: ^/api/export/notes, roles: ROLE_SCOLARITE }
-        - { path: ^/api/export/deliberations, roles: ROLE_SCOLARITE }
-        - { path: ^/api/notifications/envoyer, roles: ROLE_SCOLARITE }
+        - { path: ^/api/reclamations, roles: ROLE_SCOLARITE, methods: [GET] }
+        - { path: ^/api/reclamations, roles: ROLE_ETUDIANT, methods: [POST] }
 
-        # --- Enseignant ---
+        # --- Notifications — spécifiques AVANT générales ---
+        - { path: ^/api/notifications/envoyer, roles: ROLE_SCOLARITE }
+        - { path: ^/api/notifications, roles: IS_AUTHENTICATED_FULLY }
+
+        # --- Notes ---
         - {
               path: ^/api/notes,
               roles: ROLE_ENSEIGNANT,
               methods: [POST, PUT, DELETE],
           }
+        - { path: ^/api/notes, roles: IS_AUTHENTICATED_FULLY, methods: [GET] }
 
-        # --- Étudiant ---
-        - { path: ^/api/reclamations, roles: ROLE_ETUDIANT, methods: [POST] }
+        # --- Délibérations ---
+        - { path: ^/api/deliberations, roles: ROLE_SCOLARITE }
 
-        # --- Tout utilisateur connecté (lecture) ---
-        - { path: ^/api/auth/me, roles: IS_AUTHENTICATED_FULLY }
+        # --- Export ---
+        - { path: ^/api/export/releve, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/export/pv, roles: ROLE_SCOLARITE }
+        - { path: ^/api/export/notes, roles: ROLE_SCOLARITE }
+        - { path: ^/api/export/deliberations, roles: ROLE_SCOLARITE }
+
+        # --- Etudiants ---
+        - { path: ^/api/etudiants, roles: ROLE_ADMIN, methods: [DELETE] }
+        - { path: ^/api/etudiants, roles: ROLE_SCOLARITE, methods: [POST, PUT] }
+        - {
+              path: ^/api/etudiants,
+              roles: IS_AUTHENTICATED_FULLY,
+              methods: [GET],
+          }
+
+        # --- Enseignants ---
+        - {
+              path: ^/api/enseignants,
+              roles: ROLE_ADMIN,
+              methods: [POST, PUT, DELETE],
+          }
+        - {
+              path: ^/api/enseignants,
+              roles: IS_AUTHENTICATED_FULLY,
+              methods: [GET],
+          }
+
+        # --- Filieres ---
+        - {
+              path: ^/api/filieres,
+              roles: ROLE_ADMIN,
+              methods: [POST, PUT, DELETE],
+          }
         - {
               path: ^/api/filieres,
               roles: IS_AUTHENTICATED_FULLY,
               methods: [GET],
+          }
+
+        # --- Semestres ---
+        - {
+              path: ^/api/semestres,
+              roles: ROLE_ADMIN,
+              methods: [POST, PUT, DELETE],
           }
         - {
               path: ^/api/semestres,
               roles: IS_AUTHENTICATED_FULLY,
               methods: [GET],
           }
-        - { path: ^/api/ues, roles: IS_AUTHENTICATED_FULLY, methods: [GET] }
-        - {
-              path: ^/api/enseignants,
-              roles: IS_AUTHENTICATED_FULLY,
-              methods: [GET],
-          }
-        - {
-              path: ^/api/etudiants,
-              roles: IS_AUTHENTICATED_FULLY,
-              methods: [GET],
-          }
-        - { path: ^/api/notes, roles: IS_AUTHENTICATED_FULLY, methods: [GET] }
-        - { path: ^/api/notifications, roles: IS_AUTHENTICATED_FULLY }
-        - { path: ^/api/export/releve, roles: IS_AUTHENTICATED_FULLY }
 
-        # --- Tout le reste nécessite d'être connecté ---
+        # --- UEs ---
+        - { path: ^/api/ues, roles: ROLE_ADMIN, methods: [POST, PUT, DELETE] }
+        - { path: ^/api/ues, roles: IS_AUTHENTICATED_FULLY, methods: [GET] }
+
+        # --- Utilisateurs ---
+        - { path: ^/api/utilisateurs, roles: ROLE_ADMIN }
+
+        # --- Tout le reste ---
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

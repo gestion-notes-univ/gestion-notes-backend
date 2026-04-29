@@ -52,7 +52,7 @@ class UtilisateurService
              ->setPrenom($data['prenom'])
              ->setEmail($data['email'])
              ->setRole($data['role'])
-             ->setPasswordHash(
+             ->setPassword(
                  $this->hasher->hashPassword($user, $data['password'])
              );
 
@@ -71,7 +71,7 @@ class UtilisateurService
         if (isset($data['actif']))   $user->setActif((bool)$data['actif']);
 
         if (!empty($data['password'])) {
-            $user->setPasswordHash(
+            $user->setPassword(
                 $this->hasher->hashPassword($user, $data['password'])
             );
         }

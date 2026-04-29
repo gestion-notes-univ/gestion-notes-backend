@@ -42,14 +42,14 @@ class AuthService
              ->setPrenom($data['prenom'])
              ->setEmail($data['email'])
              ->setRole($role)
-             ->setPasswordHash($this->hasher->hashPassword($user, $data['password']));
+             ->setPassword($this->hasher->hashPassword($user, $data['password']));
 
         $this->em->persist($user);
         $this->em->flush();
 
         return [
             'id'    => $user->getId(),
-            'nom'   => $user->getNomComplet(),
+            'nom'   => $user->getNom(),
             'email' => $user->getEmail(),
             'role'  => $user->getRole(),
         ];

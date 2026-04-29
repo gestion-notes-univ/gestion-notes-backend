@@ -37,7 +37,7 @@ class ReclamationController extends AbstractController
 
         if (!$etudiant) return $this->json(['error' => 'Introuvable'], 404);
 
-        $data = $this->service->getByEtudiant($etudiant);
+        $data = $this->service->getByEtudiant($this->getUser());
 
         return $this->json(array_map([$this->service, 'serialize'], $data));
     }
@@ -52,7 +52,7 @@ class ReclamationController extends AbstractController
 
             $data = json_decode($request->getContent(), true);
 
-            $r = $this->service->create($etudiant, $data);
+            $r = $this->service->create($data,$this->getUser());
 
             return $this->json([
                 'message' => 'Créée',
@@ -73,7 +73,7 @@ class ReclamationController extends AbstractController
 
         try {
             $data = json_decode($request->getContent(), true);
-            $r = $this->service->traiter($r, $data);
+            $r = $this->service->traiter($r, $data,null); // a changer 
 
             return $this->json([
                 'message' => 'Traitée',

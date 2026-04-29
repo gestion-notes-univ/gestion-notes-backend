@@ -31,8 +31,8 @@ class NotificationController extends AbstractController
 
             return $this->json([
                 'total'         => count($notifications),
-                'non_lues'      => count(array_filter($notifications, fn($n) => !$n->isLu())),
-                'notifications' => array_map([$this, 'serialize'], $notifications),
+                'non_lues'      => count(array_filter($notifications, fn($n) => !$n->isLue())),
+                'notifications' => array_map([$this->service, 'serialize'], $notifications),
             ]);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 400);
@@ -83,13 +83,4 @@ class NotificationController extends AbstractController
         }
     }
 
-    private function serialize($n): array
-    {
-        return [
-            'id'         => $n->getId(),
-            'message'    => $n->getMessage(),
-            'lu'         => $n->isLu(),
-            'created_at' => $n->getCreatedAt()?->format('d/m/Y H:i'),
-        ];
-    }
 }

@@ -1,7 +1,7 @@
 parameters:
     # Chemin vers wkhtmltopdf selon ton OS
     # Linux (Ubuntu/Debian) :
-    wkhtmltopdf_path: "/usr/local/bin/wkhtmltopdf"
+    wkhtmltopdf_path: "%env(WKHTMLTOPDF_PATH)%"
     # macOS (Homebrew) : '/usr/local/bin/wkhtmltopdf'
     # Windows           : 'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
 

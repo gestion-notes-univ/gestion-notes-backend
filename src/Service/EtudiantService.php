@@ -65,7 +65,7 @@ class EtudiantService
              ->setPrenom($data['prenom'])
              ->setEmail($data['email'])
              ->setRole('etudiant')
-             ->setPasswordHash(
+             ->setPassword(
                  $this->hasher->hashPassword($user, $data['password'])
              );
 

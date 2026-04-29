@@ -42,18 +42,55 @@ class ExportService
     }
 
     public function getNotesBySemestre(Semestre $semestre): array
-    {
-        return $this->em->createQuery('
-            SELECT n FROM App\Entity\Note n
-            JOIN n.uniteEnseignement ue
-            WHERE ue.semestre = :semestre
-            ORDER BY n.etudiant ASC, ue.code ASC
-        ')->setParameter('semestre', $semestre)->getResult();
-    }
+{
+    return $this->em->createQuery('
+        SELECT n FROM App\Entity\Note n
+        JOIN n.ue ue
+        WHERE ue.semestre = :semestre
+        ORDER BY ue.code ASC
+    ')->setParameter('semestre', $semestre)->getResult();
+}
 
     public function getDeliberations(Semestre $semestre): array
     {
         return $this->em->getRepository(Deliberation::class)
                         ->findBy(['semestre' => $semestre]);
     }
+    public function getNotesByEtudiantAndSemestre(Etudiant $etudiant, Semestre $semestre): array
+{
+    return $this->em->createQuery('
+        SELECT n FROM App\Entity\Note n
+        JOIN n.ue ue
+        WHERE n.etudiant = :etudiant
+        AND ue.semestre = :semestre
+        AND n.validee = true
+    ')->setParameters([
+        'etudiant' => $etudiant,
+        'semestre' => $semestre,
+    ])->getResult();
+}
+
+public function getDeliberationByEtudiantAndSemestre(Etudiant $etudiant, Semestre $semestre): ?Deliberation
+{
+    return $this->em->getRepository(Deliberation::class)->findOneBy([
+        'etudiant' => $etudiant,
+        'semestre' => $semestre,
+    ]);
+}
+
+public function calculerMoyenne(array $notes): ?float
+{
+    $notes = array_filter($notes, fn($n) => $n->getNoteFinale() !== null);
+    if (empty($notes)) return null;
+
+    $total = 0;
+    $coefs = 0;
+    foreach ($notes as $note) {
+        $coef   = $note->getUe()->getCoefficient();
+        $total += $note->getNoteFinale() * $coef;
+        $coefs += $coef;
+    }
+
+    return $coefs > 0 ? round($total / $coefs, 2) : null;
+}
 }

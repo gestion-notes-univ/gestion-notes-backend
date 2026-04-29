@@ -32,7 +32,15 @@ class Note
     #[ORM\CheckConstraint(name: 'check_note_examen_range', expression: '(note_examen BETWEEN 0 AND 20)')]
     private ?float $noteExamen = null;
 
-    #[ORM\Column(type: 'decimal', precision: 4, scale: 2, nullable: true, options: ['default' => 0])]
+    #[ORM\Column(
+    name: 'note_finale',
+    type: 'decimal',
+    precision: 4,
+    scale: 2,
+    nullable: true,
+    insertable: false,
+    updatable: false
+)]
     private ?float $noteFinale = null;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]

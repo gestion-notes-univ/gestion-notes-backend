@@ -17,17 +17,22 @@ class ReclamationService
         return $this->em->getRepository(Reclamation::class)->findAll();
     }
 
+    public function getOne(string $id): ?Reclamation
+    {
+        return $this->em->getRepository(Reclamation::class)->find($id);
+    }
+
     public function getByEtudiant(Utilisateur $user): array
     {
         $etudiant = $this->em->getRepository(Etudiant::class)
-            ->findOneBy(['utilisateur' => $user]);
+                             ->findOneBy(['utilisateur' => $user]);
 
         if (!$etudiant) {
             throw new \Exception('Profil étudiant introuvable');
         }
 
         return $this->em->getRepository(Reclamation::class)
-            ->findBy(['etudiant' => $etudiant]);
+                        ->findBy(['etudiant' => $etudiant]);
     }
 
     public function create(array $data, Utilisateur $user): Reclamation
@@ -37,13 +42,11 @@ class ReclamationService
         }
 
         $etudiant = $this->em->getRepository(Etudiant::class)
-            ->findOneBy(['utilisateur' => $user]);
-
-        $note = $this->em->getRepository(Note::class)
-            ->find($data['note_id']);
+                             ->findOneBy(['utilisateur' => $user]);
+        $note     = $this->em->getRepository(Note::class)->find($data['note_id']);
 
         if (!$etudiant) throw new \Exception('Profil étudiant introuvable');
-        if (!$note) throw new \Exception('Note introuvable');
+        if (!$note)     throw new \Exception('Note introuvable');
 
         if ($note->getEtudiant()->getId() != $etudiant->getId()) {
             throw new \Exception('Cette note ne vous appartient pas');
@@ -56,15 +59,14 @@ class ReclamationService
         ]);
 
         if ($existante) {
-            throw new \Exception('Réclamation déjà en attente');
+            throw new \Exception('Une réclamation est déjà en attente pour cette note');
         }
 
         $reclamation = new Reclamation();
         $reclamation->setEtudiant($etudiant)
-            ->setNote($note)
-            ->setMotif($data['motif'])
-            ->setStatut('en_attente')
-            ->setCreatedAt(new \DateTimeImmutable());
+                    ->setNote($note)
+                    ->setMotif($data['motif'])
+                    ->setStatut('en_attente');
 
         $this->em->persist($reclamation);
         $this->em->flush();
@@ -72,24 +74,42 @@ class ReclamationService
         return $reclamation;
     }
 
-    public function traiter(string $id, array $data, Utilisateur $user): Reclamation
+    public function traiter(Reclamation $reclamation, array $data, ?Utilisateur $user): Reclamation // a changer 
     {
-        $reclamation = $this->em->getRepository(Reclamation::class)->find($id);
-
-        if (!$reclamation) {
-            throw new \Exception('Réclamation introuvable');
-        }
-
         $statutsValides = ['en_cours', 'resolue', 'rejetee'];
+
         if (!in_array($data['statut'] ?? '', $statutsValides)) {
-            throw new \Exception('Statut invalide');
+            throw new \Exception('Statut invalide. Valeurs acceptées : ' . implode(', ', $statutsValides));
         }
 
         $reclamation->setStatut($data['statut'])
-            ->setTraiteePar($user);
+                    ->setTraiteePar($user);
 
         $this->em->flush();
 
         return $reclamation;
+    }
+
+    public function serialize(Reclamation $r): array
+    {
+        $u = $r->getEtudiant()->getUtilisateur();
+
+        return [
+            'id'          => $r->getId(),
+            'etudiant'    => $u->getPrenom() . ' ' . $u->getNom(),
+            'note'        => [
+                'id'          => $r->getNote()->getId(),
+                'note_cc'     => $r->getNote()->getNoteCc(),
+                'note_examen' => $r->getNote()->getNoteExamen(),
+                'note_finale' => $r->getNote()->getNoteFinale(),
+                'ue'          => $r->getNote()->getUe()->getNom(),
+            ],
+            'motif'       => $r->getMotif(),
+            'statut'      => $r->getStatut(),
+            'traitee_par' => $r->getTraiteePar()
+                                ? $r->getTraiteePar()->getPrenom() . ' ' . $r->getTraiteePar()->getNom()
+                                : null,
+            'created_at'  => $r->getCreatedAt()?->format('d/m/Y H:i'),
+        ];
     }
 }

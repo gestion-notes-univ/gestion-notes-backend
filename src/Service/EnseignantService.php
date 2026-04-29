@@ -35,7 +35,7 @@ class EnseignantService
              ->setPrenom($data['prenom'])
              ->setEmail($data['email'])
              ->setRole('enseignant')
-             ->setPasswordHash($this->hasher->hashPassword($user, $data['password']));
+             ->setPassword($this->hasher->hashPassword($user, $data['password']));
 
         $this->em->persist($user);
 
