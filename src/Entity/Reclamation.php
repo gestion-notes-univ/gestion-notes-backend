@@ -25,11 +25,11 @@ class Reclamation
     #[ORM\Column(type: 'text')]
     private string $motif;
 
-    #[ORM\Column(type: 'string', columnDefinition: "statut_reclamation NOT NULL DEFAULT 'en_attente'")]
+    #[ORM\Column(type: 'string', length: 50)]
     private string $statut = 'en_attente';
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
-    #[ORM\JoinColumn(name: 'traitee_par', referencedColumnName: 'id')]
+    #[ORM\JoinColumn(name: 'traitee_par', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?Utilisateur $traiteePar = null;
 
     #[ORM\Column(name: 'created_at', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]

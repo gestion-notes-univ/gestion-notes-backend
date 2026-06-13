@@ -18,7 +18,7 @@ class Notification
     #[ORM\JoinColumn(name: 'destinataire_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private Utilisateur $destinataire;
 
-    #[ORM\Column(type: 'string', columnDefinition: "type_notification NOT NULL")]
+    #[ORM\Column(type: 'string', length: 100)]
     private string $typeNotif;
 
     #[ORM\Column(length: 200)]

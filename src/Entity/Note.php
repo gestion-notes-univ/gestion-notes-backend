@@ -47,7 +47,7 @@ class Note
     private bool $validee = false;
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
-    #[ORM\JoinColumn(name: 'validee_par', referencedColumnName: 'id')]
+    #[ORM\JoinColumn(name: 'validee_par', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?Utilisateur $valideePar = null;
 
     #[ORM\Column(name: 'date_saisie', type: 'datetime', nullable: true)]

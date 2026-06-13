@@ -28,7 +28,7 @@ class Deliberation
     #[ORM\Column(name: 'credits_valides', type: 'integer', options: ['default' => 0])]
     private int $creditsValides = 0;
 
-    #[ORM\Column(type: 'string', columnDefinition: "resultat_deliberation NOT NULL")]
+    #[ORM\Column(type: 'string', length: 50)]
     private string $decision;
 
     #[ORM\Column(name: 'date_deliberation', type: 'datetime', nullable: true)]

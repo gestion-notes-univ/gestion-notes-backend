@@ -29,7 +29,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'password_hash', length: 255)]
     private string $password;
 
-    #[ORM\Column(type: 'string', columnDefinition: "role_utilisateur NOT NULL DEFAULT 'etudiant'")]
+    #[ORM\Column(type: 'string', length: 50)]
     private string $role = 'etudiant';
 
     #[ORM\Column(type: 'boolean', options: ['default' => true])]
